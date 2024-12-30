@@ -1,5 +1,6 @@
 # Project exclude paths
 /cmake-build-debug/
 build/
+py_test/
 # clion project
 /.idea/
