@@ -64,6 +64,7 @@
         "algorithm": "cpp",
         "*.mm": "cpp",
         "codecvt": "cpp",
-        "fstream": "cpp"
+        "fstream": "cpp",
+        "__config": "cpp"
     }
 }

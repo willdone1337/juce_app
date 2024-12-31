@@ -8,7 +8,7 @@ class MainComponent : public juce::AudioAppComponent
 public:
     MainComponent()
     {
-        setSize(800, 400);
+        setSize(800, 800);
 
         // Add frequency slider
         addAndMakeVisible(frequencySlider);
@@ -74,8 +74,8 @@ public:
         {
             auto currentSample = (float)std::sin(currentAngle);
             currentAngle += angleDelta;
-            leftBuffer[sample] = currentSample * this->level * this->amplitude;
-            rightBuffer[sample] = currentSample * this->level * this->amplitude;
+            leftBuffer[sample] = currentSample *  this->amplitude;
+            rightBuffer[sample] = currentSample * this->amplitude;
         }
     }
 
@@ -89,14 +89,12 @@ private:
         auto cyclesPerSample = frequencySlider.getValue() / currentSampleRate;
         angleDelta = cyclesPerSample;
         sineWaveComponent.setFrequency(frequencySlider.getValue());
-        sineWaveComponent.repaint();  // Trigger a repaint of the sine wave component
     }
 
     void updateAmplitude()
     {
         amplitude = amplitudeSlider.getValue();
         sineWaveComponent.setAmplitude(amplitude);
-        sineWaveComponent.repaint();  // Trigger a repaint of the sine wave component
     }
 
     juce::Slider frequencySlider;
@@ -109,8 +107,7 @@ private:
     double currentSampleRate = 0.0;
     double currentAngle = 0.0;
     double angleDelta = 0.0;
-    double amplitude = 1.0;
-    float level = 0.125f;
+    double amplitude = .125f;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
