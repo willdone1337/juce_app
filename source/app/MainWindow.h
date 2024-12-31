@@ -1,4 +1,3 @@
-// MainWindow.h
 #pragma once
 
 #include <JuceHeader.h>
