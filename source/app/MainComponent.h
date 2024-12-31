@@ -89,12 +89,14 @@ private:
         auto cyclesPerSample = frequencySlider.getValue() / currentSampleRate;
         angleDelta = cyclesPerSample;
         sineWaveComponent.setFrequency(frequencySlider.getValue());
+        sineWaveComponent.repaint();  // Trigger a repaint of the sine wave component
     }
 
     void updateAmplitude()
     {
         amplitude = amplitudeSlider.getValue();
         sineWaveComponent.setAmplitude(amplitude);
+        sineWaveComponent.repaint();  // Trigger a repaint of the sine wave component
     }
 
     juce::Slider frequencySlider;

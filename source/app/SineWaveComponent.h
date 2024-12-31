@@ -11,13 +11,15 @@ public:
     void setFrequency(double frequency)
     {
         this->frequency = frequency;
-        repaint();
+        generateSineWave();  // Regenerate the sine wave with the new frequency
+        repaint();  // Trigger a repaint after updating the frequency
     }
 
     void setAmplitude(double amplitude)
     {
         this->amplitude = amplitude;
-        repaint();
+        generateSineWave();  // Regenerate the sine wave with the new amplitude
+        repaint();  // Trigger a repaint after updating the amplitude
     }
 
     void paint(juce::Graphics& g) override
