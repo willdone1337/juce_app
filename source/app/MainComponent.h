@@ -24,8 +24,8 @@ public:
 
         // Add amplitude slider
         addAndMakeVisible(amplitudeSlider);
-        amplitudeSlider.setRange(0.0, 3.0, .1f);
-        amplitudeSlider.setValue(1.0);
+        amplitudeSlider.setRange(0.0, 1.0, .05f);
+        amplitudeSlider.setValue(0.125);
         amplitudeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 90, 20);
         amplitudeSlider.onValueChange = [this] { updateAmplitude(); };
 
@@ -36,7 +36,8 @@ public:
 
         // Create and add sine wave visualization
         addAndMakeVisible(sineWaveComponent);
-        
+        sineWaveLabel.setText("Sine Wave", juce::dontSendNotification);
+        sineWaveLabel.attachToComponent(&sineWaveComponent, false);
         // Start the audio
         setAudioChannels(0, 2); // no inputs, 2 outputs
     }
@@ -101,7 +102,7 @@ private:
     juce::Slider amplitudeSlider;
     juce::Label frequencyLabel;
     juce::Label amplitudeLabel;
-
+    juce::Label sineWaveLabel;
     SineWaveComponent sineWaveComponent;
     
     double currentSampleRate = 0.0;

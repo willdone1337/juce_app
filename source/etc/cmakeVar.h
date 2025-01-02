@@ -9,7 +9,7 @@
 namespace cmakeVar {
 
     static const String
-        buildYear {"2024"},
+        buildYear {"2025"},
 
         companyName {"noizplay"},
         companyURL {"noizplay.com"},
