@@ -4,3 +4,4 @@ build/
 py_test/
 # clion project
 /.idea/
+.vscode/

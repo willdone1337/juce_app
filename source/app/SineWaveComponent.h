@@ -7,7 +7,7 @@ class SineWaveComponent : public juce::Component, private juce::Timer
 {
 public:
     SineWaveComponent(){
-        startTimerHz(25);  // 25hz
+        startTimerHz(30);  // 25hz
     }
 
     ~SineWaveComponent() override = default;
@@ -30,8 +30,8 @@ public:
     {
         juce::Path sineWavePath;
         
-        g.fillAll(juce::Colours::black);  // Background color
-        g.setColour(juce::Colours::green);  // Sine wave color
+        g.fillAll(juce::Colours::black);  
+        g.setColour(juce::Colours::green);
         generateSineWave(sineWavePath);
         g.strokePath(sineWavePath, juce::PathStrokeType(2.0f)); // It pain the filled sineWavePath
     }
@@ -49,7 +49,7 @@ private:
         int height = getHeight();
         
         double phase = 0.0;
-        double sampleRate = 44100.0; // Standard sample rate for audio in the Mac M3 Max
+        double sampleRate = 48100.0; // Standard sample rate for audio in the Mac M3 Max
         for (int x = 0; x < width; ++x)
         {
             double time = (x + currentPhase) / sampleRate;
