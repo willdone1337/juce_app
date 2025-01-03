@@ -41,19 +41,23 @@ public:
         repaint();
     }
 
+    void set_iter_value(const float value, const int index)
+    {
+        sineData[index] = value;
+    }
+
 private:
     void generateSineWave(juce::Path& sineWavePath)
     {
 
         int width = getWidth();
         int height = getHeight();
-        
         double phase = 0.0;
         double sampleRate = 48100.0; // Standard sample rate for audio in the Mac M3 Max
-        for (int x = 0; x < width; ++x)
+        for (int x = 0; x < 1 << 9; ++x)
         {
             double time = (x + currentPhase) / sampleRate;
-            double y = amplitude * std::sin(2.0 * juce::MathConstants<double>::pi * frequency * time);
+            double y = sineData[x] * amplitude;//amplitude * std::sin(2.0 * juce::MathConstants<double>::pi * frequency * time);
             sineWavePath.lineTo(x, height / 2 - y * height / 2);  // Scale to fit in the window and it uses array data structure and size is constant(16).
         }
         // sineWavePath.clear();
@@ -66,6 +70,8 @@ private:
         }
         repaint();  // Trigger a repaint to update the sine wave
     }
+
+    std::vector<float> sineData = std::vector<float>(1 << 9, 0.0f);  
     double currentPhase = 0.0f; // X-line(time) increase value
     double frequency = 500.0; // Default frequencyg
     double amplitude = .125f;   // Default amplitude
