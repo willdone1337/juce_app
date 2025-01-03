@@ -40,24 +40,23 @@ public:
         auto rightHandEdge = spectrogramImage.getWidth() - 1; //511
         auto imageHeight   = spectrogramImage.getHeight(); // 512
         // first, shuffle our image leftwards by 1 pixel..
-        spectrogramImage.moveImageSection (0, 0, 1, 0, rightHandEdge, imageHeight);         // [1]
+        spectrogramImage.moveImageSection (0, 0, 1, 0, rightHandEdge, imageHeight);         
         
         // then render our FFT data..
-        forwardFFT.performFrequencyOnlyForwardTransform (fftData.data());                   // [2]
- 
+        forwardFFT.performFrequencyOnlyForwardTransform (fftData.data());                   
         // find the range of values produced, so we can scale our rendering to
         // show up the detail clearly
-        auto maxLevel = juce::FloatVectorOperations::findMinAndMax (fftData.data(), fftSize / 2); // [3]
+        auto maxLevel = juce::FloatVectorOperations::findMinAndMax (fftData.data(), fftSize / 2); 
 
-        juce::Image::BitmapData bitmap { spectrogramImage, rightHandEdge, 0, 1, imageHeight, juce::Image::BitmapData::writeOnly }; // [4]
+        juce::Image::BitmapData bitmap { spectrogramImage, rightHandEdge, 0, 1, imageHeight, juce::Image::BitmapData::writeOnly };
  
-        for (auto y = 1; y < imageHeight; ++y)                                              // [5]
+        for (auto y = 1; y < imageHeight; ++y)                                              
         {
             auto skewedProportionY = 1.0f - std::exp (std::log ((float) y / (float) imageHeight) * 0.2f);
             auto fftDataIndex = (size_t) juce::jlimit (0, fftSize / 2, (int) (skewedProportionY * fftSize / 2));
             auto level = juce::jmap (fftData[fftDataIndex], 0.0f, juce::jmax (maxLevel.getEnd(), 1e-5f), 0.0f, 1.0f);
     
-            bitmap.setPixelColour (0, y, juce::Colour::fromHSV (level, 1.0f, level, 1.0f)); // [6]
+            bitmap.setPixelColour (0, y, juce::Colour::fromHSV (level, 1.0f, level, 1.0f)); 
         }
     }
 

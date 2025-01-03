@@ -25,8 +25,8 @@ public:
         
         // Create and add sine wave visualization
         addAndMakeVisible(WaveComponent);
-        sineWaveLabel.setText("Sine Wave", juce::dontSendNotification);
-        sineWaveLabel.attachToComponent(&WaveComponent, false);
+        WaveLabel.setText("Wave", juce::dontSendNotification);
+        WaveLabel.attachToComponent(&WaveComponent, false);
         
         // Create and add FFT visualization
         addAndMakeVisible(fftComponent);
@@ -50,18 +50,12 @@ public:
 
     void resized() override
     {
-    auto area = getLocalBounds().reduced(10); // Add padding around edges.
-
-    // Reserve space for the Wave visualization
-    auto waveArea = area.removeFromTop(area.getHeight() / 3); // Top 1/3 for WaveComponent
-    WaveComponent.setBounds(waveArea.reduced(10));            // Add padding around WaveComponent
-
-    // Reserve space for sliders
-    auto sliderArea = area.removeFromTop(50);                 // 50px for slider
-    amplitudeSlider.setBounds(sliderArea.reduced(10));        // Center amplitude slider in reserved area
-
-    // Reserve remaining space for FFT visualization
-    fftComponent.setBounds(area.reduced(10));                 // Remaining area for FFTComponent
+        auto area = getLocalBounds().reduced(10); 
+        auto waveArea = area.removeFromTop(area.getHeight() / 3); 
+        WaveComponent.setBounds(waveArea.reduced(10));            
+        auto sliderArea = area.removeFromTop(50);                 
+        amplitudeSlider.setBounds(sliderArea.reduced(10));        
+        fftComponent.setBounds(area.reduced(10));                 
     }
 
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override
@@ -141,7 +135,7 @@ private:
     juce::Slider amplitudeSlider;
     juce::Label frequencyLabel;
     juce::Label amplitudeLabel;
-    juce::Label sineWaveLabel;
+    juce::Label WaveLabel;
     juce::Label fftLabel;
     
     WaveComponent WaveComponent;
