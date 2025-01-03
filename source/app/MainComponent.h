@@ -1,8 +1,8 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "SineWaveComponent.h"
-#include "FFTComponent.h"
+#include "WaveComponent.h"
+#include "SpectogramComponent.h"
 
 class MainComponent : public juce::AudioAppComponent
 {
@@ -10,19 +10,7 @@ public:
     MainComponent()
     {
         setSize(800, 1200);
-
-        // Add frequency slider
-        // addAndMakeVisible(frequencySlider);
-        // frequencySlider.setRange(50.0, 5000.0, 1.0);
-        // frequencySlider.setValue(500.0);
-        // frequencySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 90, 20);
-        // frequencySlider.onValueChange = [this] { updateFrequency(); };
-
-        // Add frequency label
-        // addAndMakeVisible(frequencyLabel);
-        // frequencyLabel.setText("\nFrequency (Hz)", juce::dontSendNotification);
-        // frequencyLabel.attachToComponent(&frequencySlider, false);
-
+        
         // Add amplitude slider
         addAndMakeVisible(amplitudeSlider);
         amplitudeSlider.setRange(0.0, 10.0, .01f);
@@ -34,31 +22,20 @@ public:
         addAndMakeVisible(amplitudeLabel);
         amplitudeLabel.setText("Amplitude", juce::dontSendNotification);
         amplitudeLabel.attachToComponent(&amplitudeSlider, false);
-
+        
         // Create and add sine wave visualization
-        addAndMakeVisible(sineWaveComponent);
+        addAndMakeVisible(WaveComponent);
         sineWaveLabel.setText("Sine Wave", juce::dontSendNotification);
-        sineWaveLabel.attachToComponent(&sineWaveComponent, false);
+        sineWaveLabel.attachToComponent(&WaveComponent, false);
         
         // Create and add FFT visualization
         addAndMakeVisible(fftComponent);
         fftLabel.setText("FFT", juce::dontSendNotification);
         fftLabel.attachToComponent(&fftComponent, false);
 
-        audioSettingsComponent.reset(new juce::AudioDeviceSelectorComponent(
-            deviceManager,
-            0, 2,  // Min input channels, Max input channels
-            0, 2,  // Min output channels, Max output channels
-            true,  // Show audio input selector
-            true,  // Show audio output selector
-            false,  // Show sample rate selector
-            false  // Show buffer size selector
-        ));
-        addAndMakeVisible(audioSettingsComponent.get());
-        audioSettingsComponent->setBounds(10, 650, 200, 600);
-
         // Start the audio
-        setAudioChannels(1, 2); // 2 input channels (e.g., microphone), 2 output channels
+        setAudioChannels(1, 2); 
+        // 1 input channels(cause in this case i can properly load and produce the sound) (e.g., microphone), 2 output channels
     }
 
     ~MainComponent() override
@@ -73,12 +50,18 @@ public:
 
     void resized() override
     {
-        auto area = getLocalBounds();
-        frequencySlider.setBounds(area.removeFromTop(95).reduced(10));
-        amplitudeSlider.setBounds(area.removeFromTop(80).reduced(10));
-        sineWaveComponent.setBounds(area.removeFromTop(200).reduced(10));
-        fftComponent.setBounds(area.removeFromTop(200).reduced(10));
-        // audioSettingsComponent->setBounds(area.removeFromTop(200).reduced(10));
+    auto area = getLocalBounds().reduced(10); // Add padding around edges.
+
+    // Reserve space for the Wave visualization
+    auto waveArea = area.removeFromTop(area.getHeight() / 3); // Top 1/3 for WaveComponent
+    WaveComponent.setBounds(waveArea.reduced(10));            // Add padding around WaveComponent
+
+    // Reserve space for sliders
+    auto sliderArea = area.removeFromTop(50);                 // 50px for slider
+    amplitudeSlider.setBounds(sliderArea.reduced(10));        // Center amplitude slider in reserved area
+
+    // Reserve remaining space for FFT visualization
+    fftComponent.setBounds(area.reduced(10));                 // Remaining area for FFTComponent
     }
 
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override
@@ -93,7 +76,7 @@ public:
             currentSampleRate = 48000.0;  // Default to 48 kHz
             std::cerr << "Warning: Invalid sampleRate received, using default: 48000 Hz" << std::endl;
         }
-        
+        std::cout << sampleRate << " SAMPLE RATE UPDATED\n";        
         updateFrequency();
         updateAmplitude();
     }
@@ -107,6 +90,14 @@ public:
             return;
         }
 
+        if (prevSampleRate != currentSampleRate)
+        {
+            std::cout << "Sample Rate is changed to " << currentSampleRate << std::endl;
+            prevSampleRate = currentSampleRate;
+            std::cout << "Number of Sample from the I/O Buffer " << bufferToFill.numSamples << std::endl;
+        }
+        // TODO : change dynamically the size of wave component due to the changes
+        // in the dynamic changes in the bufferToFIll ?  
         auto* leftInputBuffer = bufferToFill.buffer->getReadPointer(0, bufferToFill.startSample);
         auto* rightInputBuffer = bufferToFill.buffer->getReadPointer(1, bufferToFill.startSample);
         auto* leftOutputBuffer = bufferToFill.buffer->getWritePointer(0, bufferToFill.startSample);
@@ -115,16 +106,16 @@ public:
         for (auto sample = 0; sample < bufferToFill.numSamples; ++sample)
         {
             // Simple processing: amplify the input
-            float processedSampleLeft = leftInputBuffer[sample] * amplitude;
-            // float processedSampleRight = rightInputBuffer[sample] * amplitude;
+            float processedSampleLeft = (leftInputBuffer[sample] * .238f) * amplitude;
         
             // Write processed audio to output
             leftOutputBuffer[sample] = processedSampleLeft;
             rightOutputBuffer[sample] = processedSampleLeft;
 
             // Optionally update visualizations
-            fftComponent.set_iter_value(processedSampleLeft, sample);
-            sineWaveComponent.set_iter_value(processedSampleLeft, sample);
+            fftComponent.pushNextSampleIntoFifo(processedSampleLeft);
+            WaveComponent.set_iter_value(processedSampleLeft, sample);
+            // TODO spectorgram pusging value FUNCTION call here !!! 
         }
     }
 
@@ -137,13 +128,13 @@ private:
     {
         auto cyclesPerSample = frequencySlider.getValue() / currentSampleRate;
         angleDelta = cyclesPerSample * 2.0 * juce::MathConstants<double>::pi;
-        sineWaveComponent.setFrequency(frequencySlider.getValue());
+        WaveComponent.setFrequency(frequencySlider.getValue());
     }
 
     void updateAmplitude()
     {
         amplitude = amplitudeSlider.getValue();
-        sineWaveComponent.setAmplitude(amplitude);
+        WaveComponent.setAmplitude(amplitude);
     }
 
     juce::Slider frequencySlider;
@@ -153,14 +144,14 @@ private:
     juce::Label sineWaveLabel;
     juce::Label fftLabel;
     
-    SineWaveComponent sineWaveComponent;
+    WaveComponent WaveComponent;
     FFTComponent fftComponent;
-    std::unique_ptr<juce::AudioDeviceSelectorComponent> audioSettingsComponent;
+    // std::unique_ptr<juce::AudioDeviceSelectorComponent> audioSettingsComponent;
 
-
-    double currentSampleRate = 0.0;
-    double currentAngle = 0.0;
-    double angleDelta = 0.0;
+    double prevSampleRate = -1.0f;
+    double currentSampleRate = 0.0f;
+    double currentAngle = 0.0f;
+    double angleDelta = 0.0f;
     double amplitude = 0.125f;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)

@@ -3,14 +3,14 @@
 
 #include <JuceHeader.h>
 
-class SineWaveComponent : public juce::Component, private juce::Timer
+class WaveComponent : public juce::Component, private juce::Timer
 {
 public:
-    SineWaveComponent(){
+    WaveComponent(){
         startTimerHz(30);  // 25hz
     }
 
-    ~SineWaveComponent() override = default;
+    ~WaveComponent() override = default;
 
     void setFrequency(double frequency)
     {
@@ -24,7 +24,7 @@ public:
         repaint();  // Trigger a repaint after updating the amplitude
     }
     // All the repaint() calls in the MainComponent class are now replaced with repaint() 
-    // calls in the SineWaveComponent class and remove from the MainComponent.h.
+    // calls in the WaveComponent class and remove from the MainComponent.h.
 
     void paint(juce::Graphics& g) override
     {
@@ -45,11 +45,9 @@ public:
     {
         sineData[index] = value;
     }
-
 private:
     void generateSineWave(juce::Path& sineWavePath)
     {
-
         int width = getWidth();
         int height = getHeight();
         double phase = 0.0;
@@ -76,5 +74,5 @@ private:
     double frequency = 500.0; // Default frequencyg
     double amplitude = .125f;   // Default amplitude
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SineWaveComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WaveComponent)
 };
