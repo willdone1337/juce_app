@@ -11,4 +11,15 @@ Designed to support learning and experimentation in audio manipulation, this app
 ### Template Source  
 This application template is based on the [AudioAppTemplate](https://github.com/martinstolz-ch/AudioAppTemplate).  
 
+### Usage
+
+To build the project, simply compile the source files using a CMake:
+
+```bash
+mkdir build && make run && make app 
+```
+
+### Note
+This application has been compiled and tested only on macOS. Compatibility with other operating systems is not guaranteed.
+
 ---  
