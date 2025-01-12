@@ -25,8 +25,8 @@ public:
         {
             if (! nextFFTBlockReady)
             {
-                std::fill (fftData.begin(), fftData.end(), 0.0f);
-                std::copy (fifo.begin(), fifo.end(), fftData.begin());
+                std::fill(fftData.begin(), fftData.end(), 0.0f);
+                std::copy(fifo.begin(), fifo.end(), fftData.begin());
                 nextFFTBlockReady = true;
             }
             fifoIndex = 0;
@@ -43,10 +43,10 @@ public:
         spectrogramImage.moveImageSection (0, 0, 1, 0, rightHandEdge, imageHeight);         
         
         // then render our FFT data..
-        forwardFFT.performFrequencyOnlyForwardTransform (fftData.data());                   
+        forwardFFT.performFrequencyOnlyForwardTransform(fftData.data());                   
         // find the range of values produced, so we can scale our rendering to
         // show up the detail clearly
-        auto maxLevel = juce::FloatVectorOperations::findMinAndMax (fftData.data(), fftSize / 2); 
+        auto maxLevel = juce::FloatVectorOperations::findMinAndMax(fftData.data(), fftSize / 2); 
 
         juce::Image::BitmapData bitmap { spectrogramImage, rightHandEdge, 0, 1, imageHeight, juce::Image::BitmapData::writeOnly };
  
