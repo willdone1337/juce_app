@@ -6,10 +6,17 @@ class WaveComponent : public juce::Component, private juce::Timer
 {
 public:
     WaveComponent(){
+        this->sampleSampleRate =  static_cast<int>(this->sampleRate / this->sampleChunk); // 48000 / 2048 = 23....s
+        // this->sampleSampleRate = sampleSampleRate
         startTimerHz(30);  // 25hz
     }
 
     ~WaveComponent() override = default;
+    
+    void setSampleRate(double samplerate)
+    {
+        this->sampleRate = samplerate;
+    }
 
     void setFrequency(double frequency)
     {
@@ -28,7 +35,6 @@ public:
     void paint(juce::Graphics& g) override
     {
         // juce::Path WavePath;
-        
         g.fillAll(juce::Colours::black);  
         g.setColour(juce::Colours::green);
         generateWave();
@@ -40,9 +46,27 @@ public:
         repaint();
     }
 
-    void set_iter_value(const float value, const int index)
+    void set_iter_value(const float value)
     {
-        sineData[index] = value;
+        // std::cout << this->sampleSampleRate << " SAMPLE RAAA\n";
+        if ((this->globalSineDataIdx % this->sampleSampleRate) == 0)
+        {
+            sineData[this->sineDataIdx] = value;
+            // std::cout << " HERE ? ? ?  ? " << this->sineData[this->sineDataIdx] << std::endl;
+            this->sineDataIdx++;
+            if (this->sineDataIdx == this->sineData.size()){
+            // if (this->sineDataIdx == 0){
+                // this->sineDataIdx = this->sineData.size() - 1;
+                this->sineDataIdx = 0;;
+            };
+        }
+
+        this->globalSineDataIdx++;
+        if (this->globalSineDataIdx == this->sampleRate)
+        {
+            this->globalSineDataIdx = 0;
+        }
+        // std::cout << this->globalSineDataIdx << " GLOBAL " << this->sineDataIdx << std::endl;
     }
 
     void set_ftsize(size_t size)
@@ -55,10 +79,11 @@ private:
         WavePath.clear();  // Clear the path to avoid overlapping
         int width = getWidth();    // Current width of the component
         int height = getHeight();  // Current height of the component
-        double sampleRate = 48100.0;  // Standard sample rate for audio
-        double timeStep = 1.0 / sampleRate;  // Time step for each sample
-        WavePath.startNewSubPath(0, height / 2);  // Start at the middle of the height
-        for (int x = 0; x < width; ++x)  // Iterate over the width of the component
+        std::cout << width << " width" << std::endl;
+        double timeStep = 1.0 / this->sampleRate;  // Time step for each sample
+        // WavePath.startNewSubPath(0, height / 2);  // Start at the middle of the height
+        // for (int x = 0; x < width; ++x)  // Iterate over the width of the component
+        for (int x = width - 1; x >= 0; --x)  // Iterate over the width of the component
         {
             double y = sineData[x % sineData.size()] * amplitude;  // Scale amplitude and use sineData
             WavePath.lineTo(x, height / 2 - y * (height / 2));  // Map y to the component's height
@@ -70,17 +95,22 @@ private:
         currentPhase += 1.0;  // Increment the phase
         if (std::isinf(currentPhase)){
             currentPhase = 0.0f;
-        }
+        } 
         repaint();  // Trigger a repaint to update the sine wave
     }
     
-    std::vector<float> sineData = std::vector<float>(1 << 9, 0.0f);  
+    std::vector<float> sineData = std::vector<float>(1 << 11, 0.0f);  
     juce::Path WavePath;
     double currentPhase = 0.0f; // X-line(time) increase value
     double frequency = 500.0; // Default frequencyg
     double amplitude = .125f;   // Default amplitude
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WaveComponent)
+    int sineDataIdx = 0;//(1 << 20) - 1; //slice for the sine data filling
+    int globalSineDataIdx = 0;
+    bool paintSineData = false;
+    double sampleRate = 48000.0f;
+    double sampleChunk = 512.0f;
+    int sampleSampleRate;
+    // JUCE_DECLARE_NO N_COPYABLE_WITH_LEAK_DETECTOR(WaveComponent);
 };
 
 // With Spectogram

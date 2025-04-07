@@ -108,7 +108,7 @@ public:
 
             // Optionally update visualizations
             fftComponent.pushNextSampleIntoFifo(processedSampleLeft);
-            WaveComponent.set_iter_value(processedSampleLeft, sample);
+            WaveComponent.set_iter_value(processedSampleLeft);
             // TODO spectorgram pusging value FUNCTION call here !!! 
         }
     }
