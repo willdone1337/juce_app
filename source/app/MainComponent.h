@@ -103,8 +103,8 @@ public:
             float processedSampleLeft = (leftInputBuffer[sample] * .238f) * amplitude;
         
             // Write processed audio to output
-            leftOutputBuffer[sample] = processedSampleLeft;
-            rightOutputBuffer[sample] = processedSampleLeft;
+            // leftOutputBuffer[sample] = processedSampleLeft;
+            // rightOutputBuffer[sample] = processedSampleLeft;
 
             // Optionally update visualizations
             fftComponent.pushNextSampleIntoFifo(processedSampleLeft);

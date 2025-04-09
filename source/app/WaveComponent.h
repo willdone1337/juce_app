@@ -1,14 +1,18 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <cassert>
 
 class WaveComponent : public juce::Component, private juce::Timer
 {
 public:
     WaveComponent(){
-        this->sampleSampleRate =  static_cast<int>(this->sampleRate / this->sampleChunk); // 48000 / 2048 = 23....s
+        this->sampleSampleRate = 4;//static_cast<int>(this->sampleRate / this->sampleChunk); // 48000 / 2048 = 23....s
+        this->sineStartIdx = 0;
+        assert(this->sineWindowSize <= this->sineData.size());
+        
         // this->sampleSampleRate = sampleSampleRate
-        startTimerHz(30);  // 25hz
+        startTimerHz(25);  // 25hz
     }
 
     ~WaveComponent() override = default;
@@ -76,18 +80,31 @@ public:
 private:
     void generateWave()
     {
+        // we have to keep start and end point of the sine data
+        // and iterate over this indexies to be sure that we are in the right
+        // window for the updating the wave image 
         WavePath.clear();  // Clear the path to avoid overlapping
         int width = getWidth();    // Current width of the component
         int height = getHeight();  // Current height of the component
-        std::cout << width << " width" << std::endl;
         double timeStep = 1.0 / this->sampleRate;  // Time step for each sample
-        // WavePath.startNewSubPath(0, height / 2);  // Start at the middle of the height
+        WavePath.startNewSubPath(0, height / 2);  // Start at the middle of the height
         // for (int x = 0; x < width; ++x)  // Iterate over the width of the component
-        for (int x = width - 1; x >= 0; --x)  // Iterate over the width of the component
+        int last_start_val = this->sineStartIdx;
+        // for (int x = width - 1; x >= 0; --x)  // Iterate over the width of the component
+        // {
+        //     double y = sineData[x % sineData.size()] * amplitude;  // Scale amplitude and use sineData
+        //     WavePath.lineTo(x, height / 2 - y * (height / 2));  // Map y to the component's height
+        // }
+        
+        // for (int x = this->sineStartIdx; x <= (this->sineStartIdx + this->sineWindowSize); ++x)
+        for (int x = 0; x < width; ++x)
         {
-            double y = sineData[x % sineData.size()] * amplitude;  // Scale amplitude and use sineData
+            // double y = sineData[x % sineData.size()] * amplitude;  // Scale amplitude and use sineData
+            double y = sineData[this->sineStartIdx % sineData.size()] * amplitude;  // Scale amplitude and use sineData
             WavePath.lineTo(x, height / 2 - y * (height / 2));  // Map y to the component's height
+            this->sineStartIdx = (this->sineStartIdx + 1) % sineData.size();
         }
+        this->sineStartIdx = (this->sineStartIdx + this->sineStepSize) % sineData.size();
     }
     
     void timerCallback() override
@@ -108,8 +125,11 @@ private:
     int globalSineDataIdx = 0;
     bool paintSineData = false;
     double sampleRate = 48000.0f;
-    double sampleChunk = 512.0f;
+    double sampleChunk = 1024.0f;
     int sampleSampleRate;
+    int sineStepSize = 4;
+    int sineWindowSize = 512;
+    int sineStartIdx;
     // JUCE_DECLARE_NO N_COPYABLE_WITH_LEAK_DETECTOR(WaveComponent);
 };
 
