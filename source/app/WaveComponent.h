@@ -7,7 +7,7 @@ class WaveComponent : public juce::Component, private juce::Timer
 {
 public:
     WaveComponent(){
-        this->sampleSampleRate = 4;//static_cast<int>(this->sampleRate / this->sampleChunk); // 48000 / 2048 = 23....s
+        this->sampleSampleRate = 1024;//static_cast<int>(this->sampleRate / this->sampleChunk); // 48000 / 2048 = 23....s
         this->sineStartIdx = 0;
         assert(this->sineWindowSize <= this->sineData.size());
         
@@ -52,15 +52,13 @@ public:
 
     void set_iter_value(const float value)
     {
-        // std::cout << this->sampleSampleRate << " SAMPLE RAAA\n";
+        cummSineValue += value;
         if ((this->globalSineDataIdx % this->sampleSampleRate) == 0)
         {
-            sineData[this->sineDataIdx] = value;
-            // std::cout << " HERE ? ? ?  ? " << this->sineData[this->sineDataIdx] << std::endl;
+            sineData[this->sineDataIdx] = cummSineValue / this->sampleSampleRate;
+            cummSineValue = 0.0f;
             this->sineDataIdx++;
             if (this->sineDataIdx == this->sineData.size()){
-            // if (this->sineDataIdx == 0){
-                // this->sineDataIdx = this->sineData.size() - 1;
                 this->sineDataIdx = 0;;
             };
         }
@@ -70,7 +68,6 @@ public:
         {
             this->globalSineDataIdx = 0;
         }
-        // std::cout << this->globalSineDataIdx << " GLOBAL " << this->sineDataIdx << std::endl;
     }
 
     void set_ftsize(size_t size)
@@ -88,15 +85,8 @@ private:
         int height = getHeight();  // Current height of the component
         double timeStep = 1.0 / this->sampleRate;  // Time step for each sample
         WavePath.startNewSubPath(0, height / 2);  // Start at the middle of the height
-        // for (int x = 0; x < width; ++x)  // Iterate over the width of the component
         int last_start_val = this->sineStartIdx;
-        // for (int x = width - 1; x >= 0; --x)  // Iterate over the width of the component
-        // {
-        //     double y = sineData[x % sineData.size()] * amplitude;  // Scale amplitude and use sineData
-        //     WavePath.lineTo(x, height / 2 - y * (height / 2));  // Map y to the component's height
-        // }
-        
-        // for (int x = this->sineStartIdx; x <= (this->sineStartIdx + this->sineWindowSize); ++x)
+
         for (int x = 0; x < width; ++x)
         {
             // double y = sineData[x % sineData.size()] * amplitude;  // Scale amplitude and use sineData
@@ -104,7 +94,7 @@ private:
             WavePath.lineTo(x, height / 2 - y * (height / 2));  // Map y to the component's height
             this->sineStartIdx = (this->sineStartIdx + 1) % sineData.size();
         }
-        this->sineStartIdx = (this->sineStartIdx + this->sineStepSize) % sineData.size();
+        this->sineStartIdx = (last_start_val + this->sineStepSize) % sineData.size();
     }
     
     void timerCallback() override
@@ -127,17 +117,9 @@ private:
     double sampleRate = 48000.0f;
     double sampleChunk = 1024.0f;
     int sampleSampleRate;
-    int sineStepSize = 4;
+    int sineStepSize = 1;
     int sineWindowSize = 512;
     int sineStartIdx;
+    double cummSineValue = 0.f;
     // JUCE_DECLARE_NO N_COPYABLE_WITH_LEAK_DETECTOR(WaveComponent);
 };
-
-// With Spectogram
-// PID   COMMAND      %CPU TIME     #TH  #WQ  #POR MEM   PURG CMPR PGRP PPID STATE    BOOSTS     %CPU_ME %CPU_OTHRS UID  FAULTS COW  MSGSEN MSGRE SYSBSD SYSMAC CSW    PAGE IDLE POWE INSTRS    CYCLES    JETP
-// 6256  Audio App    15.1 00:03.38 13   3    414  356M+ 13M  0B   6254 6254 sleeping *0[10]     0.77518 0.00000    501  10875+ 339  25418+ 5835+ 30768+ 66075+ 32187+ 6    2+   15.1 265128731 346503119 180
-
-
-// Without Spectogram
-// PID   COMMAND      %CPU TIME     #TH  #WQ  #POR MEM  PURG CMPR PGRP PPID STATE    BOOSTS     %CPU_ME %CPU_OTHRS UID  FAUL COW  MSGSE MSGRE SYSBSD SYSMAC CSW    PAGE IDLE POWE INSTRS    CYCLES    JETP USER
-// 6991  Audio App    6.8  00:01.02 13   3    415  471M 13M  0B   6990 6990 sleeping *0[13]     0.41167 0.00000    501  8074 332  10024 1640+ 11808+ 29717+ 12981+ 2    2+   6.8  121816648 160003631 180  vildan
