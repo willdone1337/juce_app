@@ -7,8 +7,9 @@ class WaveComponent : public juce::Component, private juce::Timer
 {
 public:
     WaveComponent(){
-        this->sampleSampleRate = 1024;//static_cast<int>(this->sampleRate / this->sampleChunk); // 48000 / 2048 = 23....s
-        this->sineStartIdx = 0;
+        this->sampleSampleRate = 1536;//static_cast<int>(this->sampleRate / this->sampleChunk); // 48000 / 2048 = 23....s
+        // this->sineStartIdx = 0;
+        this->sineStartIdx = this->sineData.size() -;
         assert(this->sineWindowSize <= this->sineData.size());
         
         // this->sampleSampleRate = sampleSampleRate
@@ -82,6 +83,7 @@ private:
         // window for the updating the wave image 
         WavePath.clear();  // Clear the path to avoid overlapping
         int width = getWidth();    // Current width of the component
+        std::cout << width << " WIDTH\n";
         int height = getHeight();  // Current height of the component
         double timeStep = 1.0 / this->sampleRate;  // Time step for each sample
         WavePath.startNewSubPath(0, height / 2);  // Start at the middle of the height
@@ -106,7 +108,7 @@ private:
         repaint();  // Trigger a repaint to update the sine wave
     }
     
-    std::vector<float> sineData = std::vector<float>(1 << 11, 0.0f);  
+    std::vector<float> sineData = std::vector<float>(1 << 10, 0.0f);  
     juce::Path WavePath;
     double currentPhase = 0.0f; // X-line(time) increase value
     double frequency = 500.0; // Default frequencyg
@@ -123,3 +125,12 @@ private:
     double cummSineValue = 0.f;
     // JUCE_DECLARE_NO N_COPYABLE_WITH_LEAK_DETECTOR(WaveComponent);
 };
+
+
+
+
+// 760 - width of gui window
+// 1024 - capacity of our system
+// 48k / 1536(sampling of sound size) = 31 points per second
+// 1024 / 31 = 33 seconds can be store in 1024 size
+
